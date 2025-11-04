@@ -3,7 +3,7 @@
 Ensemble CNNs for multi‑label chest X‑ray classification. Built for the **Grand X‑Ray Slam: Division B** Kaggle competition.
 
 > **Validation**: AUC **0.91**, Weighted F1 **0.89**
-> **Rank**: 67 (first Kaggle comp; first‑year student)
+> **Rank**: 67 (first Kaggle comp)
 > **Backbones**: ResNet50 · EfficientNetB3 · DenseNet121 (ensemble)
 
 ---
