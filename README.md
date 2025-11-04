@@ -1,4 +1,4 @@
-# Nano Banana AI — Grand X‑Ray Slam (Division B)
+# Grand X‑Ray Slam (Division B)
 
 Ensemble CNNs for multi‑label chest X‑ray classification. Built for the **Grand X‑Ray Slam: Division B** Kaggle competition.
 
