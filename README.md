@@ -176,10 +176,7 @@ probs = predict_ensemble([
 
 ## Results & Screenshots
 
-Include in your repo (recommended):
-
-* Leaderboard crop showing username & rank (67).
-* Validation metrics table or ROC/AUPRC curves.
+<img width="732" height="360" alt="image" src="https://github.com/user-attachments/assets/3086558d-a966-4b06-9c34-724f4089de57" />
 * A clean **model diagram** (portrait‑oriented for readability).
 
 ---
@@ -188,9 +185,3 @@ Include in your repo (recommended):
 
 * NIH Chest X‑Ray dataset maintainers and the Kaggle competition organizers.
 * Keras Applications for backbone architectures.
-
----
-
-## License
-
-Choose a license (e.g., MIT) and add it here.
