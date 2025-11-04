@@ -176,7 +176,8 @@ probs = predict_ensemble([
 
 ## Results & Screenshots
 
-<img width="1472" height="704" alt="Generated Image November 04, 2025 - 4_57PM" src="https://github.com/user-attachments/assets/c8a7109b-7abf-4b53-9840-a00fe5a4da93" />
+<img width="1472" height="704" alt="image" src="https://github.com/user-attachments/assets/83e9904b-87f4-4c3f-99de-01828f68b32e" />
+<img width="1200" height="1200" alt="Grand X-Ray Slam (Division B)" src="https://github.com/user-attachments/assets/0189176e-0281-4475-9d76-be7d71879fb9" />
 
 ---
 
