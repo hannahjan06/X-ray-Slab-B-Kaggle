@@ -1,76 +1,196 @@
-# Chest X-Ray Classification (Kaggle rank 67th | 91% Accuracy)
+# Nano Banana AI — Grand X‑Ray Slam (Division B)
 
-**Multi-Label Disease Classification using Ensemble Deep Learning**  
-*Kaggle Competition: NIH Chest X-Ray Dataset | Ranked 67th Globally*
+Ensemble CNNs for multi‑label chest X‑ray classification. Built for the **Grand X‑Ray Slam: Division B** Kaggle competition.
 
----
-
-## Project Overview
-Built an **ensemble of 3 CNN architectures** (ResNet50 + EfficientNetB3 + DenseNet121) achieving **91% AUC** on **14 chest X-ray disease classes**.  
-
-- **Dataset**: 30K+ NIH Chest X-Ray images  
-- **Classes**: Pneumonia, COVID, Atelectasis, Cardiomegaly, 11+ diseases  
-- **Rank**: **67th rank**
-- **Used in**: Ministry AI Project Application  
+> **Validation**: AUC **0.91**, Weighted F1 **0.89**
+> **Rank**: 67 (first Kaggle comp; first‑year student)
+> **Backbones**: ResNet50 · EfficientNetB3 · DenseNet121 (ensemble)
 
 ---
 
-## Results
-| Metric     | Score | Benchmark     |
-|------------|-------|---------------|
-| **AUC**    | **0.91** | Top 15%   |
-| **Accuracy** | 91%   | Outperformed 85% teams |
-| **F1-Score** | 0.89  | Multi-label weighted |
+## Table of Contents
+
+* [Overview](#overview)
+* [Dataset](#dataset)
+* [Labels](#labels)
+* [Approach](#approach)
+* [Training Pipeline](#training-pipeline)
+* [Metrics](#metrics)
+* [Environment](#environment)
+* [Quickstart](#quickstart)
+* [Inference](#inference)
+* [Reproducibility Notes](#reproducibility-notes)
+* [Results & Screenshots](#results--screenshots)
+* [Acknowledgements](#acknowledgements)
+* [License](#license)
 
 ---
 
-## Technical Stack
-Deep Learning: TensorFlow 2.15, Keras  
-Architectures: ResNet50 + EfficientNetB3 + DenseNet121 (Ensemble)  
-Data: 30K+ NIH Chest X-Rays (224x224)  
-Augmentation: Rotation, Brightness, Noise, Flips  
-Optimization: AdamW, Mixed Precision, GPU (15GB limit)  
-Libraries: NumPy, Pandas, OpenCV, Matplotlib, Scikit-learn  
+## Overview
+
+This project tackles **multi‑label classification** of chest X‑rays using an **ensemble of three CNN backbones**. Each model predicts logits for the 14 thoracic findings; the ensemble averages the logits to produce the final prediction. Training is done in TensorFlow/Keras with mixed precision and AdamW.
+
+* **Goal:** robust, general multi‑label predictions across 14 findings.
+* **Why ensemble?** Different architectures learn complementary features; averaging stabilizes performance and reduces variance.
 
 ---
 
-## Key Features
+## Dataset
 
-### 1. Smart Data Pipeline
-- GPU-Optimized: 15GB memory limit, XLA compilation  
-- Augmentation: Class-balanced (extra for rare diseases)  
-- Preprocessing: ResNet50 normalization, bilinear resize  
+* **Source:** NIH Chest X‑Ray dataset (Kaggle competition bundle)
+* **Scale:** **100K+** images (train split prepared via provided CSV)
+* **Input size:** 224×224 (this repo) — easily adjustable
+* **Preprocessing:** resize, light normalization (Keras preprocess), optional grayscale as 3‑channel
 
-### 2. Weighted Loss Function
-Handles class imbalance (20% threshold)  
-Stable multi-label weighted BCE loss  
-
-### 3. Ensemble Architecture
-Input (224x224x3) → [ResNet50] [EfficientNetB3] [DenseNet121] → Average Layer → 14 Disease Probabilities  
-
-### 4. Production Callbacks
-- Early Stopping (patience=3)  
-- Learning Rate Reduction (factor=0.5)  
-- Best Weights Checkpoint  
-- Training Time: 10 epochs (~2.5 hrs on GPU)  
+> Broken images listed in notebook are filtered out prior to training.
 
 ---
 
-## Training Results
-Epoch 1/10: auc=0.85, val_auc=0.87, loss=0.42  
-Epoch 5/10: auc=0.90, val_auc=0.91, loss=0.28 ← BEST  
-Epoch 10/10: auc=0.93, val_auc=0.90, loss=0.25  
+## Labels
+
+The task is **multi‑label** across these **14** classes:
+
+1. Atelectasis
+2. Cardiomegaly
+3. Consolidation
+4. Edema
+5. Enlarged Cardiomediastinum
+6. Fracture
+7. Lung Lesion
+8. Lung Opacity
+9. No Finding
+10. Pleural Effusion
+11. Pleural Other
+12. Pneumonia
+13. Pneumothorax
+14. Support Devices
 
 ---
 
-## Class Performance
-Top Performers: Pneumonia (94%), No Finding (93%)  
-Challenging: Pleural Other (78%), Lung Lesion (82%)  
+## Approach
+
+**Backbones** (Keras Applications):
+
+* **ResNet50** (no top)
+* **EfficientNetB3** (no top, ImageNet weights)
+* **DenseNet121** (no top, ImageNet weights)
+
+**Heads (per‑model):** GlobalAveragePooling → Dropout(0.3) → Dense(14, logits)
+
+**Ensemble:** Average of per‑model logits → Sigmoid at evaluation time.
+
+**Loss:** Weighted Binary Cross‑Entropy with class weights derived from label prevalence.
+**Optimizer:** AdamW (weight decay 1e‑6 to 1e‑7), gradient clip 1.0.
+**Mixed precision:** enabled.
+**Early stopping & LR scheduling:** on `val_auc` and `val_loss` with ReduceLROnPlateau.
+
+> A fine‑tuning pass unfreezes the top ~50 layers of each backbone at a very low LR for stability.
 
 ---
 
-## What I Learned
-- Ensemble Methods: +4% AUC gain over single model  
-- Class Imbalance: Weighted BCE + targeted augmentation  
-- Production DL: Mixed precision, GPU optimization, callbacks  
-- Multi-label: 14 simultaneous disease predictions
+## Training Pipeline
+
+**Augmentations (train):**
+
+* Horizontal flip, small rotations (via `rot90`), brightness ±0.1, contrast 0.85–1.15
+* Targeted extra aug for under‑represented classes (optional saturation/hue/flip‑up‑down, light noise)
+
+**Splits:** 80/20 train/validation (random state 42).
+**Batch sizes:** 64 (pretrain), 32 (fine‑tune).
+**Epochs:** 10 (pretrain), 5 (fine‑tune) with early stopping.
+
+---
+
+## Metrics
+
+* **Primary:** `AUC` (from logits)
+* **Also tracked:** Binary Accuracy (0.5 threshold in‑training)
+
+**Validation (best):**
+
+* **AUC:** **0.91**
+* **Weighted F1:** **0.89** (computed post‑hoc on validation predictions)
+
+> For deployment, compute **per‑class thresholds** by sweeping 0.05–0.95 to maximize F1 for each label (improves macro performance vs global 0.5).
+
+---
+
+## Environment
+
+* **Runtime:** Kaggle Notebook (GPU enabled)
+* **GPU:** NVIDIA Tesla **T4** (~15 GB)
+* **Python:** 3.11.13
+* **TensorFlow:** 2.x (mixed precision)
+* **Key libs:** `tensorflow`, `numpy`, `pandas`, `scikit-learn`, `matplotlib`, `opencv-python`
+
+---
+
+## Quickstart
+
+> These steps mirror the Kaggle notebook; adapt paths if running locally.
+
+1. **Prepare CSVs & paths**
+
+   * Load `train2.csv` and create absolute `Image_path` entries.
+   * Drop non‑model columns: `Image_name`, `Study`, `Patient_ID`.
+   * Fill missing `Age` (mean) and `Sex` (mode).
+
+2. **Build datasets**
+
+   * Use the provided TF data pipeline with `decode_and_process_train/val`.
+
+3. **Train ensemble**
+
+   * Stage 1: train all three backbones + heads with early stopping.
+   * Save best weights to `ensemble_model.weights.h5`.
+
+4. **Fine‑tune**
+
+   * Rebuild ensemble, load weights, unfreeze top ~50 layers per backbone.
+   * Train with LR `5e‑6`, save to `final_finetuned_ensemble.weights.h5`.
+
+---
+
+## Inference
+
+Use the helper to get class probabilities (sigmoid applied to logits):
+
+```python
+probs = predict_ensemble([
+    "/path/to/xray1.jpg",
+    "/path/to/xray2.jpg",
+])  # shape: [N, 14]
+```
+
+> Apply per‑class thresholds for binary decisions; calibrate with temperature scaling if you need better probability quality.
+
+---
+
+## Reproducibility Notes
+
+* Set seeds for NumPy/TF if deterministic runs are required.
+* Mixed precision may introduce tiny numeric drift; monitor AUC/F1 on the same validation split.
+* Ensure consistent preprocessing (same Keras `preprocess_input` used in train/val/infer).
+
+---
+
+## Results & Screenshots
+
+Include in your repo (recommended):
+
+* Leaderboard crop showing username & rank (67).
+* Validation metrics table or ROC/AUPRC curves.
+* A clean **model diagram** (portrait‑oriented for readability).
+
+---
+
+## Acknowledgements
+
+* NIH Chest X‑Ray dataset maintainers and the Kaggle competition organizers.
+* Keras Applications for backbone architectures.
+
+---
+
+## License
+
+Choose a license (e.g., MIT) and add it here.
