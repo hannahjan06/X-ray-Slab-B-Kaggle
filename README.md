@@ -176,8 +176,7 @@ probs = predict_ensemble([
 
 ## Results & Screenshots
 
-<img width="732" height="360" alt="image" src="https://github.com/user-attachments/assets/3086558d-a966-4b06-9c34-724f4089de57" />
-* A clean **model diagram** (portrait‑oriented for readability).
+<img width="1472" height="704" alt="Generated Image November 04, 2025 - 4_57PM" src="https://github.com/user-attachments/assets/c8a7109b-7abf-4b53-9840-a00fe5a4da93" />
 
 ---
 
